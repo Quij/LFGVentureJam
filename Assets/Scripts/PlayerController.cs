@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	void Awake()
 	{
 		GameController.sharedInstance.SubscribeToGameStateChanges(this);
+		collider = GetComponent<BoxCollider2D>();
 	}
 
 	// Use this for initialization
@@ -64,9 +65,24 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	// void Attack(Attack attack) {
 	//		// do attack animation
 	//		// apply attack.movement
+	//		// at end of attack, remove .Attack state
 	// }
 
 	#endregion Movement Methods
+
+	#region Collision Methods
+
+	void OnTriggerEnter(Collider other)
+	{
+		// String otherPlayerName = model.otherPlayerName
+		// if (other.tag == otherPlayerName) {
+		//		playerState |= .Hitting
+		// }
+	}
+
+	private BoxCollider2D collider;
+
+	#endregion Collision Methods
 
 	#region PlayerState Management
 
@@ -92,6 +108,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 				// TODO
 			}
 			if ((playerState & PlayerState.Hitting) == PlayerState.Hitting) {
+				// Remove .Attacking state (Hitting overrides it)
 				// TODO
 			}
 			if ((playerState & PlayerState.GettingHit) == PlayerState.GettingHit) {
@@ -115,13 +132,19 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 		switch (newState) {
 		case GameState.Starting:
 			// TODO - Reset health, position, etc.
-			;
+			break;
 		default:
 			break;
 		}
 	}
 
 	#endregion GameStateSubscriber Methods
+}
+
+public interface PlayerControllerEventHandler
+{
+	// TODO
+	// PlayerHitOtherPlayerWithAttack(currentPlayerName, otherPlayerName, currentAttack)
 }
 
 [Flags]
