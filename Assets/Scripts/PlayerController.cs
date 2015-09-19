@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using System.Collections;
 using System;	// for Flags
 
@@ -9,12 +10,17 @@ using System;	// for Flags
 /// </summary>
 public class PlayerController : MonoBehaviour, GameStateSubscriber 
 {
+	[SerializeField]
+	private float maxSpeed;
+
 	#region Lifecycle Methods
 
 	void Awake()
 	{
 		GameController.sharedInstance.SubscribeToGameStateChanges(this);
 		collider = GetComponent<BoxCollider2D>();
+		model = GetComponent<PlayerModel>();
+		rigidBody = GetComponent<Rigidbody2D>();
 	}
 
 	// Use this for initialization
@@ -24,9 +30,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	}
 	
 	// Update is called once per frame
-	void Update () 
+	void Update ()
 	{
-	
+		LimitTopSpeedIfNeeded();
 	}
 
 	#endregion Lifecycle Methods
@@ -34,15 +40,27 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	#region Input Event Handler Methods
 
 	// TODO
-	// DidReceiveMovementCommand(Vector2 direction)
-		// movementSpeed = model.movementSpeed
-		// moveInDirection(direction, atSpeed: movementSpeed)
-		// playerState |= .Moving
-	// DidReceiveJumpCommand()
-		// jumpHeight = model.jumpHeight
-		// jumpSpeed = model.jumpSpeed
-		// doJump(jumpHeight, jumpSpeed), which will do the actual translation of the sprite
-		// playerState |= .Jump
+	void DidReceiveRawCommands(List<InputCombo> inputs)
+	{
+		foreach (input in inputs) {
+			
+		}
+	}
+
+	private void DidReceiveMovementCommand(Vector2 direction)
+	{
+		float movementSpeed = model.movementSpeed;
+		MoveInDirection(direction, movementSpeed);
+		playerState |= PlayerState.Moving;
+	}
+
+	private void DidReceiveJumpCommand()
+	{
+		float jumpHeight = model.jumpHeight;
+		float jumpSpeed = model.jumpSpeed;
+		Jump(jumpHeight, jumpSpeed);
+		playerState |= PlayerState.Jumping;
+	}
 	// DidReceiveCrouchCommand()
 		// do crouch animation
 		// playerState |= .Crouching
@@ -56,17 +74,37 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 
 	#region Movement Methods
 
-	// void MoveInDirection(Vector2 direction, float movementSpeed) {
-	//		// lerp sprite position at speed	
-	// }
-	// void Jump(float jumpHeight) {
-	//		// lerp sprite position at speed
-	// }
+	private void MoveInDirection(Vector2 direction, float movementSpeed) 
+	{
+		// Apply a force in the given direction to create the movement.
+		rigidBody.AddForce(direction.normalized * movementSpeed);
+	}
+
+	private void Jump(float jumpHeight, float jumpSpeed) {
+			// lerp sprite position at speed
+	}
 	// void Attack(Attack attack) {
 	//		// do attack animation
 	//		// apply attack.movement
 	//		// at end of attack, remove .Attack state
 	// }
+
+	private void LimitTopSpeedIfNeeded()
+	{
+		// Limit top speed.
+		if (rigidBody.velocity.x > maxSpeed) {
+			rigidBody.velocity = new Vector2(maxSpeed, rigidBody.velocity.y);
+		}
+		else if (rigidBody.velocity.x < -maxSpeed) {
+			rigidBody.velocity = new Vector2(-maxSpeed, rigidBody.velocity.y);
+		}
+		if (rigidBody.velocity.y > maxSpeed) {
+			rigidBody.velocity = new Vector2(rigidBody.velocity.x, maxSpeed);
+		}
+		else if (rigidBody.velocity.y < -maxSpeed) {
+			rigidBody.velocity = new Vector2(rigidBody.velocity.x, -maxSpeed);
+		}
+	}
 
 	#endregion Movement Methods
 
@@ -76,6 +114,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	{
 		// String otherPlayerName = model.otherPlayerName
 		// if (other.tag == otherPlayerName) {
+		//		remove .Attacking state
 		//		playerState |= .Hitting
 		// }
 	}
@@ -108,7 +147,6 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 				// TODO
 			}
 			if ((playerState & PlayerState.Hitting) == PlayerState.Hitting) {
-				// Remove .Attacking state (Hitting overrides it)
 				// TODO
 			}
 			if ((playerState & PlayerState.GettingHit) == PlayerState.GettingHit) {
@@ -139,6 +177,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	}
 
 	#endregion GameStateSubscriber Methods
+
+	private PlayerModel model;
+	private Rigidbody2D rigidBody;
 }
 
 public interface PlayerControllerEventHandler
@@ -160,4 +201,11 @@ enum PlayerState
 	Dying = 64,
 	Falling = 128,
 	Crouching = 256
+}
+
+// TEMP - This wil live in PlayerInputController
+[Flags]
+enum InputCombo
+{
+	None = 0
 }
