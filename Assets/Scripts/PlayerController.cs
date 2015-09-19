@@ -30,6 +30,44 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 
 	#endregion Lifecycle Methods
 
+	#region Input Event Handler Methods
+
+	// TODO
+	// DidReceiveMovementCommand(Vector2 direction)
+		// movementSpeed = model.movementSpeed
+		// moveInDirection(direction, atSpeed: movementSpeed)
+		// playerState |= .Moving
+	// DidReceiveJumpCommand()
+		// jumpHeight = model.jumpHeight
+		// jumpSpeed = model.jumpSpeed
+		// doJump(jumpHeight, jumpSpeed), which will do the actual translation of the sprite
+		// playerState |= .Jump
+	// DidReceiveCrouchCommand()
+		// do crouch animation
+		// playerState |= .Crouching
+	// DidReceiveAttackCommand(attackType)
+		// attack = model.attackOfType(attackType)
+		// doAttack(attack), which will trigger the animation, and apply any of the movement vectors contained within `attack`
+		// playerState |= .Attacking
+	// 
+
+	#endregion Input Event Handler Methods
+
+	#region Movement Methods
+
+	// void MoveInDirection(Vector2 direction, float movementSpeed) {
+	//		// lerp sprite position at speed	
+	// }
+	// void Jump(float jumpHeight) {
+	//		// lerp sprite position at speed
+	// }
+	// void Attack(Attack attack) {
+	//		// do attack animation
+	//		// apply attack.movement
+	// }
+
+	#endregion Movement Methods
+
 	#region PlayerState Management
 
 	// Use bit-wise comparisons for state checking. This lets us have combinations of state, like "Moving AND Jumping" or "Attacking AND GettingHit"
@@ -39,6 +77,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 		}
 		set {
 			if (playerState == PlayerState.Idle) {
+				// TODO
+			}
+			if (playerState == PlayerState.Dying) {
 				// TODO
 			}
 			if ((playerState & PlayerState.Moving) == PlayerState.Moving) { // "if state includes Moving state (but maybe other states, too)"
@@ -56,7 +97,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 			if ((playerState & PlayerState.GettingHit) == PlayerState.GettingHit) {
 				// TODO
 			}
-			if ((playerState & PlayerState.Dying) == PlayerState.Dying) {
+			if ((playerState & PlayerState.Falling) == PlayerState.Falling) {
+				// TODO
+			}
+			if ((playerState & PlayerState.Crouching) == PlayerState.Crouching) {
 				// TODO
 			}
 		}
@@ -90,5 +134,7 @@ enum PlayerState
 	Attacking = 8,
 	Hitting = 16,
 	GettingHit = 32,
-	Dying = 64
+	Dying = 64,
+	Falling = 128,
+	Crouching = 256
 }
