@@ -11,7 +11,20 @@ using System;	// for Flags
 public class PlayerController : MonoBehaviour, GameStateSubscriber 
 {
 	[SerializeField]
-	private float maxSpeed;
+	private float maxSpeed;	// TODO - Move this to the Model
+
+	[SerializeField]
+	private Sprite idleSprite;
+	[SerializeField]
+	private Sprite movingForwardSprite;
+	[SerializeField]
+	private Sprite movingBackwardSprite;
+	[SerializeField]
+	private Sprite jumpingSprite;
+	[SerializeField]
+	private Sprite fallingSprite;
+	[SerializeField]
+	private Sprite crouchingSprite;
 
 	#region Lifecycle Methods
 
@@ -42,8 +55,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 	// TODO
 	void DidReceiveRawCommands(List<InputCombo> inputs)
 	{
-		foreach (input in inputs) {
-			
+		foreach (InputCombo input in inputs) {
+			// TODO
 		}
 	}
 
@@ -131,17 +144,24 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 			return playerState;
 		}
 		set {
+			// States toward the bottom will override earlier states. So put the important ones to the bottom.
 			if (playerState == PlayerState.Idle) {
 				// TODO
+				spriteRenderer.sprite = idleSprite;
 			}
 			if (playerState == PlayerState.Dying) {
 				// TODO
 			}
 			if ((playerState & PlayerState.Moving) == PlayerState.Moving) { // "if state includes Moving state (but maybe other states, too)"
 				// TODO
+				// TODO - If moving forward...
+				spriteRenderer.sprite = movingForwardSprite;
+				// TODO - Else if moving backward...
+//				spriteRenderer.sprite = movingBackwardSprite;
 			}
 			if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
 				// TODO
+				spriteRenderer.sprite = jumpingSprite;
 			}
 			if ((playerState & PlayerState.Attacking) == PlayerState.Attacking) {
 				// TODO
@@ -154,9 +174,11 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 			}
 			if ((playerState & PlayerState.Falling) == PlayerState.Falling) {
 				// TODO
+				spriteRenderer.sprite = fallingSprite;
 			}
 			if ((playerState & PlayerState.Crouching) == PlayerState.Crouching) {
 				// TODO
+				spriteRenderer.sprite = crouchingSprite;
 			}
 		}
 	}
@@ -180,6 +202,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 
 	private PlayerModel model;
 	private Rigidbody2D rigidBody;
+	private SpriteRenderer spriteRenderer;
 }
 
 public interface PlayerControllerEventHandler
