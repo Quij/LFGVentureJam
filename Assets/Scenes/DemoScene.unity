@@ -177,7 +177,7 @@ Transform:
   m_GameObject: {fileID: 412808775}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -.400000006, y: -.109999999, z: 0}
-  m_LocalScale: {x: 139.776932, y: 66.4151917, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1721978282}
   m_RootOrder: 1
@@ -205,7 +205,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1110514303
   m_SortingOrder: 0
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 5a78115b5ed5621438129ab923065c60, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &500561369
 GameObject:
@@ -395,14 +395,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 10
-  idleSprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  movingForwardSprite: {fileID: 21300002, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+  idleSprite: {fileID: 21300000, guid: 8d3a205d306e65c448110380efc63041, type: 3}
+  movingForwardSprite: {fileID: 21300002, guid: 8d3a205d306e65c448110380efc63041,
     type: 3}
-  movingBackwardSprite: {fileID: 21300010, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+  movingBackwardSprite: {fileID: 21300004, guid: 8d3a205d306e65c448110380efc63041,
     type: 3}
-  jumpingSprite: {fileID: 21300008, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  fallingSprite: {fileID: 21300004, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  crouchingSprite: {fileID: 21300006, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  jumpingSprite: {fileID: 21300006, guid: 8d3a205d306e65c448110380efc63041, type: 3}
+  fallingSprite: {fileID: 21300008, guid: 8d3a205d306e65c448110380efc63041, type: 3}
+  crouchingSprite: {fileID: 21300010, guid: 8d3a205d306e65c448110380efc63041, type: 3}
 --- !u!212 &1832173501
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -427,7 +427,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1081714267
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8d3a205d306e65c448110380efc63041, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &1832173502
 Transform:
@@ -436,7 +436,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1832173499}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.48999977, y: -4.30000019, z: 0}
+  m_LocalPosition: {x: -8.48999977, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -482,6 +482,11 @@ MonoBehaviour:
   movementSpeed: 300
   jumpSpeed: 50
   jumpHeight: 50
+  attackCombo1: 0
+  attackCombo2: 7
+  attackCombo3: 9
+  attackCombo4: 10
+  suicideCombo: 15
 --- !u!61 &1832173506
 BoxCollider2D:
   m_ObjectHideFlags: 0

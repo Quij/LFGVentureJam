@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: 01f5dd6a9045bc448b4ae223488f1c9e
-timeCreated: 1442706786
+guid: 8d3a205d306e65c448110380efc63041
+timeCreated: 1442726311
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Movement_4
-    21300002: Movement_20
-    21300004: Movement_25
-    21300006: Movement_30
-    21300008: Movement_1
-    21300010: Movement_0
+    21300000: idle
+    21300002: forward
+    21300004: back
+    21300006: jump
+    21300008: fall
+    21300010: crouch
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     linearTexture: 0
     correctGamma: 0
     fadeOut: 0
@@ -56,7 +56,7 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: Movement_4
+    - name: idle
       rect:
         serializedVersion: 2
         x: 0
@@ -66,37 +66,27 @@ TextureImporter:
       alignment: 9
       pivot: {x: .5, y: .25}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: Movement_20
-      rect:
-        serializedVersion: 2
-        x: 857
-        y: 860
-        width: 860
-        height: 860
-      alignment: 9
-      pivot: {x: .5, y: .25}
-      border: {x: 0, y: 0, z: 0, w: 0}
-    - name: Movement_25
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 860
-        height: 860
-      alignment: 9
-      pivot: {x: .5, y: .25}
-      border: {x: 0, y: 0, z: 0, w: 0}
-    - name: Movement_30
+    - name: forward
       rect:
         serializedVersion: 2
         x: 860
-        y: 0
+        y: 860
         width: 860
         height: 860
       alignment: 9
       pivot: {x: .5, y: .25}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: Movement_1
+    - name: back
+      rect:
+        serializedVersion: 2
+        x: 1720
+        y: 860
+        width: 860
+        height: 860
+      alignment: 9
+      pivot: {x: .5, y: .25}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: jump
       rect:
         serializedVersion: 2
         x: 2580
@@ -106,11 +96,21 @@ TextureImporter:
       alignment: 9
       pivot: {x: .5, y: .25}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: Movement_0
+    - name: fall
       rect:
         serializedVersion: 2
-        x: 1720
-        y: 860
+        x: 0
+        y: 0
+        width: 860
+        height: 860
+      alignment: 9
+      pivot: {x: .5, y: .25}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: crouch
+      rect:
+        serializedVersion: 2
+        x: 860
+        y: 0
         width: 860
         height: 860
       alignment: 9
