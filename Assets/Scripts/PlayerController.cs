@@ -49,6 +49,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	[SerializeField]
 	private AudioClip soundLowKick;
 
+	private bool moveForward;
+	private bool moveBack;
+
 	#region Lifecycle Methods
 
 	void Awake()
@@ -59,12 +62,16 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 		centerline = GameObject.FindGameObjectWithTag("Centerline");
 		standardGravityScale = rigidBody.gravityScale;
+//		playerInputController = GetComponent<PlayerInputController>();
 	}
 
 	// Use this for initialization
 	void Start () 
 	{
-		GameController.sharedInstance.SubscribeToGameStateChanges(this);	
+		GameController.sharedInstance.SubscribeToGameStateChanges(this);
+
+		moveForward = false;
+		moveBack = false;
 	}
 	
 	// Update is called once per frame
@@ -91,6 +98,19 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		UpdateFacingDirection();
 	}
 
+	void FixedUpdate() {
+		/*
+		if(moveForward){
+			DidReceiveMovementCommand(Vector2.right);
+		}
+		else if(moveBack){
+			DidReceiveMovementCommand(Vector2.left);
+		}
+		*/
+
+		return;
+	}
+
 	#endregion Lifecycle Methods
 
 	#region Input Event Handler Methods
@@ -100,10 +120,20 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		InputCombo input = inputCombos[0];
 		if (StateContainsFlag(input, InputCombo.Back)) {
 			DidReceiveMovementCommand(Vector2.left);
+			moveBack = true;
 		}
+		else {
+			moveBack = false;
+		}
+
 		if (StateContainsFlag(input, InputCombo.Forward)) {
 			DidReceiveMovementCommand(Vector2.right);
+			moveForward = true;
 		}
+		else {
+			moveForward = false;
+		}
+
 		if (StateContainsFlag(input, InputCombo.Up)) {
 			DidReceiveJumpCommand();
 		}
@@ -286,6 +316,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}
 	}
 
+//	private PlayerInputController playerInputController;
 	private PlayerFacingDirection _facingDirection = PlayerFacingDirection.FacingRight;
 	private PlayerFacingDirection facingDirection {
 		get {

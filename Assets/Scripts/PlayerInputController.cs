@@ -21,7 +21,7 @@ public class PlayerInputController : MonoBehaviour {
 	void Start () {
 		inputBuffer = new List<InputCombo>();
 		bufferLimit = 10;
-		frameDuration = 0.3f;
+		frameDuration = 0.2f;
 		downTime = Time.time;
 		lastCombination = InputCombo.None;
 
@@ -70,21 +70,21 @@ public class PlayerInputController : MonoBehaviour {
 			currentCombination |= InputCombo.HiPunch;
 		}
 
-		if(Input.GetButton("guard")) {
-			currentCombination |= InputCombo.Guard;
-		}
-
-		if(Input.GetButton("dodge")) {
-			currentCombination |= InputCombo.Dodge;
-		}
-		
-		if(Input.GetButton("select")) {
-			currentCombination |= InputCombo.Select;
-		}
-		
-		if(Input.GetButton("start")) {
-			currentCombination |= InputCombo.Start;
-		}
+//		if(Input.GetButton("guard")) {
+//			currentCombination |= InputCombo.Guard;
+//		}
+//
+//		if(Input.GetButton("dodge")) {
+//			currentCombination |= InputCombo.Dodge;
+//		}
+//		
+//		if(Input.GetButton("select")) {
+//			currentCombination |= InputCombo.Select;
+//		}
+//		
+//		if(Input.GetButton("start")) {
+//			currentCombination |= InputCombo.Start;
+//		}
 
 		if(currentCombination != InputCombo.None) {
 			if((currentCombination != lastCombination) || ((currentTime - downTime) >= frameDuration)) {
