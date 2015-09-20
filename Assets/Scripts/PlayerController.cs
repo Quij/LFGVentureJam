@@ -36,6 +36,19 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	[SerializeField]
 	private Sprite attackSpriteHighKick;
 
+	[SerializeField]
+	private AudioSource audioSource;
+	[SerializeField]
+	private AudioClip soundJump;
+	[SerializeField]
+	private AudioClip soundHighPunch;
+	[SerializeField]
+	private AudioClip soundLowPunch;
+	[SerializeField]
+	private AudioClip soundHighKick;
+	[SerializeField]
+	private AudioClip soundLowKick;
+
 	#region Lifecycle Methods
 
 	void Awake()
@@ -137,6 +150,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			playerState |= PlayerState.Jumping;
 			Jump(jumpHeight, jumpSpeed);
 			timeAtLastJump = Time.time;
+
+			audioSource.clip = soundJump;
+			audioSource.Play();
 		}
 	}
 
@@ -168,17 +184,29 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		// Add movement to attacks that require it.
 		switch (attackCombo) {
 		case AttackCombo.LoPunch:
+			audioSource.clip = soundLowPunch;
+			audioSource.Play();
 			currentAttackDuration = 1.5f;
 			spriteRenderer.sprite = jumpingSprite;
 			StartCoroutine(HandleMovementsForLoPunch());
 			break;
-//		case AttackCombo.LoKick:
-//			currentAttackDuration = 1.5f;
-//			if (!isGrounded) {
-//				spriteRenderer.sprite = fallingSprite;
-//			}
-//			StartCoroutine(HandleMovementsForLoKick());
-//			break;
+		case AttackCombo.LoKick:
+			audioSource.clip = soundLowKick;
+			audioSource.Play();
+			currentAttackDuration = 1.5f;
+			if (!isGrounded) {
+				spriteRenderer.sprite = fallingSprite;
+			}
+			StartCoroutine(HandleMovementsForLoKick());
+			break;
+		case AttackCombo.HiPunch:
+			audioSource.clip = soundHighPunch;
+			audioSource.Play();
+			break;
+		case AttackCombo.HiKick:
+			audioSource.clip = soundHighKick;
+			audioSource.Play();
+			break;
 		default:
 			break;
 		}
