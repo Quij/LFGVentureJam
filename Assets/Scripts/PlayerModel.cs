@@ -113,6 +113,48 @@ public class PlayerModel : MonoBehaviour
 			return false;
 		}
 
+		public int findAttackComboNumber(InputCombo [] inputBuffer) {
+			MoveNode currentNode = root;
+			int i;
+			int j;
+			int start = (inputBuffer.Length - 1);
+			bool reset = false;
+
+			while(start > 0) {
+				//read buffer backwards
+				for(i = start; i >= 0; i--) {
+					if(reset){
+						currentNode = root;
+					}
+					else {
+						reset = true;
+					}
+
+					//focus on each child in order
+					for(j = 0; j < currentNode.children.Count; j++) {
+						//compare child against buffer
+						if(inputBuffer[i] == currentNode.children[j].inputCombo) {
+							currentNode = currentNode.children[j];
+
+							Debug.Log("[" + inputBuffer[i] + "]");
+
+							if(i == 0) {
+								Debug.Log("FOUND COMBO #" + currentNode.attackCombo);
+
+								return currentNode.attackCombo;
+							}
+
+							reset = false;
+						}
+					}
+				}
+
+				start--;
+			}
+
+			return -1;
+		}
+
 		public void printTree() {
 			MoveNode currentNode = root;
 
@@ -147,6 +189,9 @@ public class PlayerModel : MonoBehaviour
 		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.LoKick});
 		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.HiKick});
 
+		//Debug.Log(movesTree.findAttackComboNumber(new InputCombo[]{InputCombo.HiKick, InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back}));
+		//Debug.Log(movesTree.findAttackComboNumber(new InputCombo[]{InputCombo.HiKick, InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down}));
+		//Debug.Log(movesTree.findAttackComboNumber(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down}));
 		//movesTree.printTree();
 
 		return;
