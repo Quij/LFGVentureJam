@@ -54,37 +54,37 @@ public class PlayerInputController : MonoBehaviour {
 			}
 		}
 
-		if(Input.GetButton("lo kick")) {
-			currentCombination |= InputCombo.LoKick;
-		}
-
-		if(Input.GetButton("hi kick")) {
-			currentCombination |= InputCombo.HiKick;
-		}
-
-		if(Input.GetButton("lo punch")) {
-			currentCombination |= InputCombo.LoPunch;
-		}
-
-		if(Input.GetButton("hi punch")) {
-			currentCombination |= InputCombo.HiPunch;
-		}
-
-		if(Input.GetButton("guard")) {
-			currentCombination |= InputCombo.Guard;
-		}
-
-		if(Input.GetButton("dodge")) {
-			currentCombination |= InputCombo.Dodge;
-		}
-		
-		if(Input.GetButton("select")) {
-			currentCombination |= InputCombo.Select;
-		}
-		
-		if(Input.GetButton("start")) {
-			currentCombination |= InputCombo.Start;
-		}
+//		if(Input.GetButton("lo kick")) {
+//			currentCombination |= InputCombo.LoKick;
+//		}
+//
+//		if(Input.GetButton("hi kick")) {
+//			currentCombination |= InputCombo.HiKick;
+//		}
+//
+//		if(Input.GetButton("lo punch")) {
+//			currentCombination |= InputCombo.LoPunch;
+//		}
+//
+//		if(Input.GetButton("hi punch")) {
+//			currentCombination |= InputCombo.HiPunch;
+//		}
+//
+//		if(Input.GetButton("guard")) {
+//			currentCombination |= InputCombo.Guard;
+//		}
+//
+//		if(Input.GetButton("dodge")) {
+//			currentCombination |= InputCombo.Dodge;
+//		}
+//		
+//		if(Input.GetButton("select")) {
+//			currentCombination |= InputCombo.Select;
+//		}
+//		
+//		if(Input.GetButton("start")) {
+//			currentCombination |= InputCombo.Start;
+//		}
 
 		if(currentCombination != InputCombo.None) {
 			if(currentCombination != lastCombination) {

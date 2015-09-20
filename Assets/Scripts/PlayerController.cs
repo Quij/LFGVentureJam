@@ -30,7 +30,6 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	void Awake()
 	{
-		GameController.sharedInstance.SubscribeToGameStateChanges(this);
 		collider = GetComponent<BoxCollider2D>();
 		model = GetComponent<PlayerModel>();
 		rigidBody = GetComponent<Rigidbody2D>();
@@ -39,7 +38,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	// Use this for initialization
 	void Start () 
 	{
-	
+		GameController.sharedInstance.SubscribeToGameStateChanges(this);	
 	}
 	
 	// Update is called once per frame
@@ -166,11 +165,13 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	#region PlayerState Management
 
 	// Use bit-wise comparisons for state checking. This lets us have combinations of state, like "Moving AND Jumping" or "Attacking AND GettingHit"
+	private PlayerState _playerState;
 	private PlayerState playerState {
 		get {
-			return playerState;
+			return _playerState;
 		}
 		set {
+			_playerState = playerState;
 			// States toward the bottom will override earlier states. So put the important ones to the bottom.
 			if (playerState == PlayerState.Idle) {
 				// TODO
