@@ -15,27 +15,139 @@ public class PlayerModel : MonoBehaviour
 	public int attackCombo4;
 	public int suicideCombo;
 
-	private List<InputCombo[]> movesList;
+	public class MovesTree {
+		private MoveNode root;
+		public int lastAttackCombo;
+
+		private class MoveNode {
+			public List<MoveNode> children;
+			public InputCombo inputCombo;
+			public int attackCombo;
+
+			public MoveNode(InputCombo inputInstance = InputCombo.None) {
+				attackCombo = -1;
+				inputCombo = inputInstance;
+				children = new List<MoveNode>();
+
+				return;
+			}
+
+			public int findChild(InputCombo inputInstance){
+				for(int index = 0; index < children.Count; index++) {
+					if(children[index].inputCombo == inputInstance) {
+						return index;
+					}
+				}
+
+				return -1;
+			}
+
+			public void addChild(InputCombo inputInstance, MovesTree tree = null) {
+				children.Insert(0, new MoveNode(inputInstance));
+
+				if(tree != null) {
+					tree.lastAttackCombo++;
+					children[0].attackCombo = tree.lastAttackCombo;
+				}
+
+				return;
+			}
+
+			public void printAttackCombos(String ascendants = "") {
+				ascendants += "[" + inputCombo + "]";
+				if(attackCombo >= 0) {
+					ascendants += "*";
+				}
+
+				if(children.Count > 0) {
+					for(int i = 0; i < children.Count; i++) {
+						children[i].printAttackCombos(ascendants);
+					}
+				}
+				else {
+					Debug.Log("Move: " + ascendants);
+				}
+
+				return;
+			}
+		}
+
+		public MovesTree() {
+			root = new MoveNode();
+			lastAttackCombo = -1;
+
+			return;
+		}
+
+		public bool AddMove(InputCombo[] move) {
+			MoveNode currentNode = root;
+			int currentInput = 0;
+			int childIndex = currentNode.findChild(move[currentInput]);
+
+			//traverse tree until end
+			while(childIndex >= 0) {
+				currentNode = currentNode.children[childIndex];
+
+				if((currentInput + 1) == move.Length) {
+					break;
+				}
+
+				currentInput++;
+				childIndex = currentNode.findChild(move[currentInput]);
+			}
+
+			//add missing new nodes to tree up until final node
+			for(; currentInput < (move.Length - 1); currentInput++) {
+				currentNode.addChild(move[currentInput]);
+				childIndex = 0;//currentNode.findChild();
+				currentNode = currentNode.children[childIndex];
+			}
+
+			//for the final node if move doesn't exist assign new attackCombo value and return true
+			if(currentInput == (move.Length - 1)) {
+				currentNode.addChild(move[currentInput], this);
+				return true;
+			}
+
+			//else return false;
+			return false;
+		}
+
+		public void printTree() {
+			MoveNode currentNode = root;
+
+			Debug.Log("===Printing tree===");
+				root.printAttackCombos();
+			Debug.Log("===Finished printing tree===");
+
+			return;
+		}
+	}
+
+	private MovesTree movesTree;
 
 	// Use this for initialization
 	void Start () {
-		movesList = new List<InputCombo[]>();
-		movesList.Insert(0, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.LoPunch});
-		movesList.Insert(1, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.HiPunch});
-		movesList.Insert(2, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.LoKick});
-		movesList.Insert(3, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.HiKick});
-		movesList.Insert(4, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.LoPunch});
-		movesList.Insert(5, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.HiPunch});
-		movesList.Insert(6, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.LoKick});
-		movesList.Insert(7, new InputCombo[]{InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.HiKick});
-		movesList.Insert(8, new InputCombo[]{InputCombo.Back, InputCombo.Down & InputCombo.Back, InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.LoPunch});
-		movesList.Insert(9, new InputCombo[]{InputCombo.Back, InputCombo.Down & InputCombo.Back, InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.HiPunch});
-		movesList.Insert(10, new InputCombo[]{InputCombo.Back, InputCombo.Down & InputCombo.Back, InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.LoKick});
-		movesList.Insert(11, new InputCombo[]{InputCombo.Back, InputCombo.Down & InputCombo.Back, InputCombo.Down, InputCombo.Down & InputCombo.Forward, InputCombo.Forward, InputCombo.HiKick});
-		movesList.Insert(12, new InputCombo[]{InputCombo.Forward, InputCombo.Down & InputCombo.Forward, InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.LoPunch});
-		movesList.Insert(13, new InputCombo[]{InputCombo.Forward, InputCombo.Down & InputCombo.Forward, InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.HiPunch});
-		movesList.Insert(14, new InputCombo[]{InputCombo.Forward, InputCombo.Down & InputCombo.Forward, InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.LoKick});
-		movesList.Insert(15, new InputCombo[]{InputCombo.Forward, InputCombo.Down & InputCombo.Forward, InputCombo.Down, InputCombo.Down & InputCombo.Back, InputCombo.Back, InputCombo.HiKick});
+		movesTree = new MovesTree();
+
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.LoPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.HiPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.LoKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.HiKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.LoPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.HiPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.LoKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.HiKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Back, InputCombo.Down | InputCombo.Back, InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.LoPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Back, InputCombo.Down | InputCombo.Back, InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.HiPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Back, InputCombo.Down | InputCombo.Back, InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.LoKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Back, InputCombo.Down | InputCombo.Back, InputCombo.Down, InputCombo.Down | InputCombo.Forward, InputCombo.Forward, InputCombo.HiKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.LoPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.HiPunch});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.LoKick});
+		movesTree.AddMove(new InputCombo[]{InputCombo.Forward, InputCombo.Down | InputCombo.Forward, InputCombo.Down, InputCombo.Down | InputCombo.Back, InputCombo.Back, InputCombo.HiKick});
+
+		//movesTree.printTree();
 
 		return;
 	}
