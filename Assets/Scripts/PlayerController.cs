@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		collider = GetComponent<BoxCollider2D>();
 		model = GetComponent<PlayerModel>();
 		rigidBody = GetComponent<Rigidbody2D>();
+		spriteRenderer = GetComponent<SpriteRenderer>();
 	}
 
 	// Use this for initialization
@@ -53,39 +54,43 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	public void ReceivedInputCombos(List<InputCombo> inputCombos)
 	{
-		foreach (InputCombo input in inputCombos) {
-			if ((input & InputCombo.Back) == InputCombo.Back) {
-				DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
-			}
-			if ((input & InputCombo.Forward) == InputCombo.Forward) { 
-				DidReceiveMovementCommand(Vector2.right);	// TODO - Change this to `.left` depending on which way the player is facing.
-			}
-			if ((input & InputCombo.Up) == InputCombo.Up) {
-				DidReceiveJumpCommand();
-			}
-			if ((input & InputCombo.Down) == InputCombo.Down) {
-				DidReceiveCrouchCommand();
-			}
-			if ((input & InputCombo.None) == InputCombo.None) {
-				DidReceiveNoInput();
-			}
-			// TODO - Handle other inputs
+		bool didReceiveInput = false;
+		InputCombo input = inputCombos[0];
+		if ((input & InputCombo.Back) == InputCombo.Back) {
+			DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
+			didReceiveInput = true;
 		}
+		if ((input & InputCombo.Forward) == InputCombo.Forward) { 
+			DidReceiveMovementCommand(Vector2.right);	// TODO - Change this to `.left` depending on which way the player is facing.
+			didReceiveInput = true;
+		}
+		if ((input & InputCombo.Up) == InputCombo.Up) {
+			DidReceiveJumpCommand();
+			didReceiveInput = true;
+		}
+		if ((input & InputCombo.Down) == InputCombo.Down) {
+			DidReceiveCrouchCommand();
+			didReceiveInput = true;
+		}
+		if (!didReceiveInput) {
+			DidReceiveNoInput();
+		}
+		// TODO - Handle other inputs
 	}
 
 	private void DidReceiveMovementCommand(Vector2 direction)
 	{
 		float movementSpeed = model.movementSpeed;
-		MoveInDirection(direction, movementSpeed);
 		playerState |= PlayerState.Moving;
+		MoveInDirection(direction, movementSpeed);
 	}
 
 	private void DidReceiveJumpCommand()
 	{
 		float jumpHeight = model.jumpHeight;
 		float jumpSpeed = model.jumpSpeed;
-		Jump(jumpHeight, jumpSpeed);
 		playerState |= PlayerState.Jumping;
+		Jump(jumpHeight, jumpSpeed);
 	}
 
 	private void DidReceiveCrouchCommand()
@@ -100,6 +105,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			playerState = PlayerState.Falling;
 		}
 		else {
+			Debug.Log("Received no input, changing state to idle");
 			playerState = PlayerState.Idle;
 		}
 	}
@@ -121,6 +127,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private void Jump(float jumpHeight, float jumpSpeed) {
 			// lerp sprite position at speed
+
+
 	}
 	// void Attack(Attack attack) {
 	//		// do attack animation
@@ -171,44 +179,40 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			return _playerState;
 		}
 		set {
-			_playerState = playerState;
-			// States toward the bottom will override earlier states. So put the important ones to the bottom.
-			if (playerState == PlayerState.Idle) {
-				// TODO
+			_playerState = value;
+			// Reset timer-until-idle. If that timer counts down to 0, then we'll enter the Idle state.
+			if (value == PlayerState.Idle) { // If .Idle is the only flag...
 				spriteRenderer.sprite = idleSprite;
 			}
-			if (playerState == PlayerState.Dying) {
-				// TODO
-			}
-			if ((playerState & PlayerState.Moving) == PlayerState.Moving) { // "if state includes Moving state (but maybe other states, too)"
-				// TODO
-				// TODO - If moving forward...
+			if ((value & PlayerState.Moving) == PlayerState.Moving) { // "if state is just Moving, or if it includes Moving state (but maybe other states, too)"
+				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
 				spriteRenderer.sprite = movingForwardSprite;
-				// TODO - Else if moving backward...
-//				spriteRenderer.sprite = movingBackwardSprite;
+				StartCoroutine(BecomeIdleAfterDelay());
 			}
-			if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
-				// TODO
+			if ((value & PlayerState.Jumping) == PlayerState.Jumping) {
+				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
 				spriteRenderer.sprite = jumpingSprite;
+				StartCoroutine(BecomeIdleAfterDelay());
 			}
-			if ((playerState & PlayerState.Attacking) == PlayerState.Attacking) {
-				// TODO
-			}
-			if ((playerState & PlayerState.Hitting) == PlayerState.Hitting) {
-				// TODO
-			}
-			if ((playerState & PlayerState.GettingHit) == PlayerState.GettingHit) {
-				// TODO
-			}
-			if ((playerState & PlayerState.Falling) == PlayerState.Falling) {
-				// TODO
+			if ((value & PlayerState.Falling) == PlayerState.Falling) {
+				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.
+				_playerState &= ~PlayerState.Jumping;
 				spriteRenderer.sprite = fallingSprite;
+				StartCoroutine(BecomeIdleAfterDelay());
 			}
-			if ((playerState & PlayerState.Crouching) == PlayerState.Crouching) {
-				// TODO
+			if ((value & PlayerState.Crouching) == PlayerState.Crouching) {
+				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
 				spriteRenderer.sprite = crouchingSprite;
+				StartCoroutine(BecomeIdleAfterDelay());
 			}
 		}
+	}
+
+	IEnumerator BecomeIdleAfterDelay()
+	{
+		yield return new WaitForSeconds(1.0f);
+		Debug.Log("Idle timer delay");
+		playerState = PlayerState.Idle;
 	}
 
 	#endregion PlayerState Management
