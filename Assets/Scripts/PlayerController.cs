@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	private Sprite fallingSprite;
 	[SerializeField]
 	private Sprite crouchingSprite;
+//	[SerializeField]
+//	private Sprite attackSprite1;
 
 	#region Lifecycle Methods
 
@@ -58,6 +60,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			playerState |= PlayerState.Falling;
 		}
 
+//		if (Time.time - timeAtLastAttackInput > 0.5f) {
+//			playerState = RemoveFlagFromState(playerState, PlayerState.Attacking);
+//		}
+
 		UpdateFacingDirection();
 	}
 
@@ -69,10 +75,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	{
 		InputCombo input = inputCombos[0];
 		if (StateContainsFlag(input, InputCombo.Back)) {
-			DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
+			DidReceiveMovementCommand(Vector2.left);
 		}
 		if (StateContainsFlag(input, InputCombo.Forward)) {
-			DidReceiveMovementCommand(Vector2.right);	// TODO - Change this to `.left` depending on which way the player is facing.
+			DidReceiveMovementCommand(Vector2.right);
 		}
 		if (StateContainsFlag(input, InputCombo.Up)) {
 			DidReceiveJumpCommand();
@@ -80,6 +86,12 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		if (StateContainsFlag(input, InputCombo.Down)) {
 			DidReceiveCrouchCommand();
 		}
+
+		// AttackCombo attackCombo = model.ComboFromInputs(inputCombos);
+		// if (attackCombo != AttackCombo.None) {
+		// 	DidReceiveAttackCombo(attackCombo);
+		// }
+
 		// TODO - Handle other inputs
 	}
 
@@ -108,6 +120,19 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}		
 	}
 
+	private void DidReceiveAttackCombo(/*AttackCombo attackCombo*/)
+	{
+		/* currentAttack = attackCombo;
+		 * switch (attackCombo) {
+		 * 
+		 *	case AttackCombo.Combo1:
+		 *		MoveInDirection(...direction..., movementSpeed * 2);
+		 *		timeAtLastAttackCombo = Time.time;
+		 * }
+		 * 
+		 */
+	}
+
 	private void BecomeIdle()
 	{
 		if (playerState != PlayerState.Idle) {
@@ -116,11 +141,6 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			}
 		}
 	}
-	// DidReceiveAttackCommand(attackType)
-		// attack = model.attackOfType(attackType)
-		// doAttack(attack), which will trigger the animation, and apply any of the movement vectors contained within `attack`
-		// playerState |= .Attacking
-	// 
 
 	#endregion Input Event Handler Methods
 
@@ -135,11 +155,6 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	private void Jump(float jumpHeight, float jumpSpeed) {
 		rigidBody.AddForce(Vector2.up * jumpSpeed);
 	}
-	// void Attack(Attack attack) {
-	//		// do attack animation
-	//		// apply attack.movement
-	//		// at end of attack, remove .Attack state
-	// }
 
 	private void LimitTopSpeedIfNeeded()
 	{
@@ -187,6 +202,16 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				facingDirection = PlayerFacingDirection.FacingLeft;
 			}
 		}
+	}
+
+	private Sprite SpriteForCurrentAttack()
+	{
+//		switch (currentAttack) {
+//		case AttackCombo.attackCombo1:
+//			return attackCombo1Sprite;
+//		default:
+//			break;
+//		}
 	}
 
 	#endregion Movement Methods
@@ -271,6 +296,11 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				newSprite = crouchingSprite;
 				timeAtLastInput = Time.time;
 			}
+//			if (StateContainsFlag(value, PlayerState.Attacking)) {
+//				newState = RemoveIncompatibleFlagsFromState(newState);
+//				newSprite = SpriteForCurrentAttack();
+//				timeAtLastInput = Time.time;
+//			}
 
 			_playerState = newState;
 			spriteRenderer.sprite = newSprite;
@@ -417,5 +447,3 @@ enum PlayerFacingDirection
 	FacingRight,
 	FacingLeft
 }
-
-// TODO - Create an invisible centerline object, and do this.transform.lookAt(centerline). If that's negative, we're .FacingLeft. Otherwise we're .FacingRight. Eventually the centerline object will be the other player.
