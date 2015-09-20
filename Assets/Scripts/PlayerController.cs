@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		rigidBody = GetComponent<Rigidbody2D>();
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 		centerline = GameObject.FindGameObjectWithTag("Centerline");
+		standardGravityScale = rigidBody.gravityScale;
 	}
 
 	// Use this for initialization
@@ -65,10 +66,13 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		if (!isGrounded && rigidBody.velocity.y < 0) {
 			playerState |= PlayerState.Falling;
 		}
-
-		float currentAttackDuration = 0.5f;	// TODO - Do this for real, based off the model's data on the AttackCombo's `duration` property.
-		if (Time.time - timeAtLastAttackInput > currentAttackDuration) {
+		
+		if (Time.time - timeAtLastAttackInput > currentAttackDuration && StateContainsFlag(playerState, PlayerState.Attacking)) {
 			playerState = RemoveFlagFromState(playerState, PlayerState.Attacking);
+			rigidBody.gravityScale = standardGravityScale;
+			rigidBody.isKinematic = false;
+			rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+			Debug.Log("Left Attacking state");
 		}
 
 		UpdateFacingDirection();
@@ -118,9 +122,11 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private void DidReceiveMovementCommand(Vector2 direction)
 	{
-		float movementSpeed = model.movementSpeed;
-		playerState |= PlayerState.Moving;
-		MoveInDirection(direction, movementSpeed);
+		if (isAllowedToMove) {
+			float movementSpeed = model.movementSpeed;
+			playerState |= PlayerState.Moving;
+			MoveInDirection(direction, movementSpeed);
+		}
 	}
 
 	private void DidReceiveJumpCommand()
@@ -143,22 +149,36 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private void DidReceiveAttackCombo(AttackCombo attackCombo)
 	{
+		if (!isAllowedToAttack) {
+			return;
+		}
+
 		currentAttack = attackCombo;
+		currentAttackDuration = 0.5f;	// a default attack length. TODO - Grab this from the model.
 		playerState |= PlayerState.Attacking;
+
+		// Halt all movement on initiating an attack.
+		rigidBody.velocity = new Vector2(0.0f, 0.0f);
+		rigidBody.isKinematic = false;
+		rigidBody.constraints = RigidbodyConstraints2D.FreezeAll;
+
+		// While attacking, the player isn't susceptible to gravity!
+		rigidBody.gravityScale = 0.0f;
 
 		// Add movement to attacks that require it.
 		switch (attackCombo) {
 		case AttackCombo.LoPunch:
-			// Instant teleport upwards a few feet, then apply force down and forward.
-			transform.position = new Vector3(transform.position.x, transform.position.y + 5, transform.position.z);
-			MoveInDirection(Vector2.down, model.movementSpeed * 4);	// TODO - Grab a separate attack speed property from model.
-			if (facingDirection == PlayerFacingDirection.FacingRight) {
-				MoveInDirection(Vector2.right, model.movementSpeed * 4);
-			}
-			else {
-				MoveInDirection(Vector2.left, model.movementSpeed * 4);
-			}
+			currentAttackDuration = 1.5f;
+			spriteRenderer.sprite = jumpingSprite;
+			StartCoroutine(HandleMovementsForLoPunch());
 			break;
+//		case AttackCombo.LoKick:
+//			currentAttackDuration = 1.5f;
+//			if (!isGrounded) {
+//				spriteRenderer.sprite = fallingSprite;
+//			}
+//			StartCoroutine(HandleMovementsForLoKick());
+//			break;
 		default:
 			break;
 		}
@@ -173,7 +193,38 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}
 	}
 
+	private IEnumerator HandleMovementsForLoPunch()
+	{
+		rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+		
+		// Quickly move upwards a few feet, then apply force down and forward.
+		MoveInDirection(Vector2.up, model.movementSpeed * 16);
+		yield return new WaitForSeconds(0.15f);
+		spriteRenderer.sprite = attackSpriteLowPunch;
+		MoveInDirection(Vector2.down, model.movementSpeed * 24);	// TODO - Grab a separate attack speed property from model.
+		if (facingDirection == PlayerFacingDirection.FacingRight) {
+			MoveInDirection(Vector2.right, model.movementSpeed * 5);
+		}
+		else {
+			MoveInDirection(Vector2.left, model.movementSpeed * 5);
+		}
+	}
+
+	private IEnumerator HandleMovementsForLoKick()
+	{
+		rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+		MoveInDirection(Vector2.down, model.movementSpeed * 16);
+		yield return new WaitForSeconds(0.25f);
+		spriteRenderer.sprite = attackSpriteLowKick;
+		rigidBody.constraints = RigidbodyConstraints2D.FreezeAll;
+		yield return new WaitForSeconds(0.25f);
+		spriteRenderer.sprite = idleSprite;
+		rigidBody.constraints = RigidbodyConstraints2D.FreezeRotation;
+	}
+
 	private AttackCombo currentAttack;
+	private float currentAttackDuration = 0.5f;
 	private float timeAtLastAttackInput;
 
 	#endregion Input Event Handler Methods
@@ -224,6 +275,11 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	}
 	private void UpdateFacingDirection()
 	{
+		// If we're attacking, don't flip mid-animation.
+		if (playerState == PlayerState.Attacking) {
+			return;
+		}
+
 		if (centerline.transform.position.x - this.transform.position.x > 0) {
 			// Then centerline is to the right of the fighter.
 			if (facingDirection != PlayerFacingDirection.FacingRight) {
@@ -253,6 +309,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			return idleSprite;
 		}
 	}
+
+	private float standardGravityScale;
 
 	#endregion Movement Methods
 
@@ -337,6 +395,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				timeAtLastInput = Time.time;
 			}
 			if (StateContainsFlag(value, PlayerState.Attacking)) {
+				Debug.Log("Entered Attacing state");
 				newState = RemoveIncompatibleFlagsFromState(newState);
 				newSprite = SpriteForCurrentAttack();
 				timeAtLastInput = Time.time;
@@ -414,6 +473,11 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				finalState = RemoveFlagFromState(finalState, PlayerState.Crouching);
 			}
 
+			// Can't attack and move at the same time.
+			if (StateContainsFlag(finalState, PlayerState.Attacking)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.Moving);
+			}
+
 			return finalState;
 		}
 		else {
@@ -431,11 +495,26 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			_isGrounded = value;
 		}
 	}
+
 	private float timeAtLastInput;
 	private float timeAtLastJump;
 	private bool isAllowedToJump {
 		get {
 			return isGrounded;
+		}
+	}
+
+	// Allow movement if we're not attacking.
+	private bool isAllowedToMove {
+		get {
+			return !StateContainsFlag(playerState, PlayerState.Attacking);
+		}
+	}
+
+	// Allow attacking if we're not already attacking.
+	private bool isAllowedToAttack {
+		get {
+			return !StateContainsFlag(playerState, PlayerState.Attacking);
 		}
 	}
 
