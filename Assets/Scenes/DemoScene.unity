@@ -345,7 +345,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1081714267
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  m_Sprite: {fileID: 21300010, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1293689677
 GameObject:
@@ -464,6 +464,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 1352354697}
   - 114: {fileID: 1352354698}
+  - 82: {fileID: 1352354699}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -494,6 +495,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7699bbc35f844dd43bf9973962ced981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!82 &1352354699
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1352354696}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: a85271877b9cf2c4f9a92253d7ea199e, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
 --- !u!1 &1721978281
 GameObject:
   m_ObjectHideFlags: 0
@@ -558,14 +629,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxSpeed: 50
   jumpDuration: .75
-  idleSprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  movingForwardSprite: {fileID: 21300002, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+  idleSprite: {fileID: 21300010, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  movingForwardSprite: {fileID: 21300008, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
     type: 3}
-  movingBackwardSprite: {fileID: 21300010, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+  movingBackwardSprite: {fileID: 21300012, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
     type: 3}
-  jumpingSprite: {fileID: 21300008, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  fallingSprite: {fileID: 21300004, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
-  crouchingSprite: {fileID: 21300006, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  jumpingSprite: {fileID: 21300014, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  fallingSprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  crouchingSprite: {fileID: 21300016, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
+  attackSpriteHighPunch: {fileID: 21300018, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+    type: 3}
+  attackSpriteLowPunch: {fileID: 21300024, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+    type: 3}
+  attackSpriteLowKick: {fileID: 21300020, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+    type: 3}
+  attackSpriteHighKick: {fileID: 21300022, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
+    type: 3}
 --- !u!4 &1832173502
 Transform:
   m_ObjectHideFlags: 0

@@ -27,8 +27,14 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	private Sprite fallingSprite;
 	[SerializeField]
 	private Sprite crouchingSprite;
-//	[SerializeField]
-//	private Sprite attackSprite1;
+	[SerializeField]
+	private Sprite attackSpriteHighPunch;
+	[SerializeField]
+	private Sprite attackSpriteLowPunch;
+	[SerializeField]
+	private Sprite attackSpriteLowKick;
+	[SerializeField]
+	private Sprite attackSpriteHighKick;
 
 	#region Lifecycle Methods
 
@@ -60,9 +66,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			playerState |= PlayerState.Falling;
 		}
 
-//		if (Time.time - timeAtLastAttackInput > 0.5f) {
-//			playerState = RemoveFlagFromState(playerState, PlayerState.Attacking);
-//		}
+		float currentAttackDuration = 0.5f;	// TODO - Do this for real, based off the model's data on the AttackCombo's `duration` property.
+		if (Time.time - timeAtLastAttackInput > currentAttackDuration) {
+			playerState = RemoveFlagFromState(playerState, PlayerState.Attacking);
+		}
 
 		UpdateFacingDirection();
 	}
@@ -85,6 +92,20 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}
 		if (StateContainsFlag(input, InputCombo.Down)) {
 			DidReceiveCrouchCommand();
+		}
+
+		// TEMP - TODO: Replace this with the actual attack combos.
+		if (StateContainsFlag(input, InputCombo.HiKick)) {
+			DidReceiveAttackCombo(AttackCombo.HiKick);
+		}
+		if (StateContainsFlag(input, InputCombo.LoKick)) {
+			DidReceiveAttackCombo(AttackCombo.LoKick);
+		}
+		if (StateContainsFlag(input, InputCombo.HiPunch)) {
+			DidReceiveAttackCombo(AttackCombo.HiPunch);
+		}
+		if (StateContainsFlag(input, InputCombo.LoPunch)) {
+			DidReceiveAttackCombo(AttackCombo.LoPunch);
 		}
 
 		// AttackCombo attackCombo = model.ComboFromInputs(inputCombos);
@@ -120,17 +141,27 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}		
 	}
 
-	private void DidReceiveAttackCombo(/*AttackCombo attackCombo*/)
+	private void DidReceiveAttackCombo(AttackCombo attackCombo)
 	{
-		/* currentAttack = attackCombo;
-		 * switch (attackCombo) {
-		 * 
-		 *	case AttackCombo.Combo1:
-		 *		MoveInDirection(...direction..., movementSpeed * 2);
-		 *		timeAtLastAttackCombo = Time.time;
-		 * }
-		 * 
-		 */
+		currentAttack = attackCombo;
+		playerState |= PlayerState.Attacking;
+
+		// Add movement to attacks that require it.
+		switch (attackCombo) {
+		case AttackCombo.LoPunch:
+			// Instant teleport upwards a few feet, then apply force down and forward.
+			transform.position = new Vector3(transform.position.x, transform.position.y + 5, transform.position.z);
+			MoveInDirection(Vector2.down, model.movementSpeed * 4);	// TODO - Grab a separate attack speed property from model.
+			if (facingDirection == PlayerFacingDirection.FacingRight) {
+				MoveInDirection(Vector2.right, model.movementSpeed * 4);
+			}
+			else {
+				MoveInDirection(Vector2.left, model.movementSpeed * 4);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	private void BecomeIdle()
@@ -141,6 +172,9 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			}
 		}
 	}
+
+	private AttackCombo currentAttack;
+	private float timeAtLastAttackInput;
 
 	#endregion Input Event Handler Methods
 
@@ -206,12 +240,18 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private Sprite SpriteForCurrentAttack()
 	{
-//		switch (currentAttack) {
-//		case AttackCombo.attackCombo1:
-//			return attackCombo1Sprite;
-//		default:
-//			break;
-//		}
+		switch (currentAttack) {
+		case AttackCombo.HiPunch:
+			return attackSpriteHighPunch;
+		case AttackCombo.LoPunch:
+			return attackSpriteLowPunch;
+		case AttackCombo.HiKick:
+			return attackSpriteHighKick;
+		case AttackCombo.LoKick:
+			return attackSpriteLowKick;
+		default:
+			return idleSprite;
+		}
 	}
 
 	#endregion Movement Methods
@@ -296,11 +336,12 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				newSprite = crouchingSprite;
 				timeAtLastInput = Time.time;
 			}
-//			if (StateContainsFlag(value, PlayerState.Attacking)) {
-//				newState = RemoveIncompatibleFlagsFromState(newState);
-//				newSprite = SpriteForCurrentAttack();
-//				timeAtLastInput = Time.time;
-//			}
+			if (StateContainsFlag(value, PlayerState.Attacking)) {
+				newState = RemoveIncompatibleFlagsFromState(newState);
+				newSprite = SpriteForCurrentAttack();
+				timeAtLastInput = Time.time;
+				timeAtLastAttackInput = Time.time;
+			}
 
 			_playerState = newState;
 			spriteRenderer.sprite = newSprite;
@@ -446,4 +487,13 @@ enum PlayerFacingDirection
 {
 	FacingRight,
 	FacingLeft
+}
+
+// TEMP - To be replaced with the Model's version of this
+enum AttackCombo
+{
+	HiPunch,
+	LoPunch,
+	HiKick,
+	LoKick
 }
