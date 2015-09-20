@@ -8,7 +8,7 @@ using System;	// for Flags
 /// It handles events from the input controller, and passes events to the GameController.
 /// It also handles player state.
 /// </summary>
-public class PlayerController : MonoBehaviour, GameStateSubscriber 
+public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputEventHandler
 {
 	[SerializeField]
 	private float maxSpeed;
@@ -39,11 +39,25 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 
 	#region Input Event Handler Methods
 
-	// TODO
-	void DidReceiveRawCommands(List<InputCombo> inputs)
+	public void ReceivedInputCombos(List<InputCombo> inputCombos)
 	{
-		foreach (input in inputs) {
-			
+		foreach (InputCombo input in inputCombos) {
+			if ((input & InputCombo.Back) == InputCombo.Back) {
+				DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
+			}
+			if ((input & InputCombo.Forward) == InputCombo.Forward) { 
+				DidReceiveMovementCommand(Vector2.right);	// TODO - Change this to `.left` depending on which way the player is facing.
+			}
+			if ((input & InputCombo.Up) == InputCombo.Up) {
+				DidReceiveJumpCommand();
+			}
+			if ((input & InputCombo.Down) == InputCombo.Down) {
+				DidReceiveCrouchCommand();
+			}
+			if ((input & InputCombo.None) == InputCombo.None) {
+				DidReceiveNoInput();
+			}
+			// TODO - Handle other inputs
 		}
 	}
 
@@ -61,9 +75,22 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber
 		Jump(jumpHeight, jumpSpeed);
 		playerState |= PlayerState.Jumping;
 	}
-	// DidReceiveCrouchCommand()
-		// do crouch animation
-		// playerState |= .Crouching
+
+	private void DidReceiveCrouchCommand()
+	{
+		playerState |= PlayerState.Crouching;
+	}
+
+	private void DidReceiveNoInput()
+	{
+		// The player didn't do anything this frame. If they were jumping, they are now falling. If they were doing anything else, they are now idle.
+		if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
+			playerState = PlayerState.Falling;
+		}
+		else {
+			playerState = PlayerState.Idle;
+		}
+	}
 	// DidReceiveAttackCommand(attackType)
 		// attack = model.attackOfType(attackType)
 		// doAttack(attack), which will trigger the animation, and apply any of the movement vectors contained within `attack`
@@ -200,12 +227,7 @@ enum PlayerState
 	GettingHit = 32,
 	Dying = 64,
 	Falling = 128,
-	Crouching = 256
-}
-
-// TEMP - This wil live in PlayerInputController
-[Flags]
-enum InputCombo
-{
-	None = 0
+	Crouching = 256,
+	FacingLeft = 512,
+	FacingRight = 1024
 }

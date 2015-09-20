@@ -10,6 +10,13 @@ public class PlayerInputController : MonoBehaviour {
 	private int bufferLimit;
 	private InputCombo lastCombination;
 
+	private PlayerInputEventHandler eventHandler;
+
+	void Awake()
+	{
+		eventHandler = GetComponent<PlayerController>();
+	}
+
 	// Use this for initialization
 	void Start () {
 		inputBuffer = new List<InputCombo>();
@@ -96,6 +103,7 @@ public class PlayerInputController : MonoBehaviour {
 			}
 
 			Debug.Log(inputBuffer.Count);
+			eventHandler.ReceivedInputCombos(inputBuffer);
 		}
 
 		return;
@@ -117,4 +125,9 @@ public enum InputCombo{
 	Dodge = 512,
 	Select = 1024,
 	Start = 2048
+}
+
+interface PlayerInputEventHandler
+{
+	void ReceivedInputCombos(List<InputCombo> inputCombos);
 }
