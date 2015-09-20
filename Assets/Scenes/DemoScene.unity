@@ -95,7 +95,6 @@ GameObject:
   - 4: {fileID: 375166467}
   - 212: {fileID: 375166466}
   - 61: {fileID: 375166465}
-  - 50: {fileID: 375166464}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -103,22 +102,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!50 &375166464
-Rigidbody2D:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 375166463}
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: .0500000007
-  m_GravityScale: 1
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 7
 --- !u!61 &375166465
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -389,9 +372,10 @@ GameObject:
   - 4: {fileID: 1832173502}
   - 212: {fileID: 1832173501}
   - 114: {fileID: 1832173500}
-  - 50: {fileID: 1832173503}
   - 114: {fileID: 1832173504}
   - 114: {fileID: 1832173505}
+  - 61: {fileID: 1832173503}
+  - 50: {fileID: 1832173506}
   m_Layer: 0
   m_Name: Fighter
   m_TagString: Untagged
@@ -457,22 +441,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!50 &1832173503
-Rigidbody2D:
-  serializedVersion: 2
+--- !u!61 &1832173503
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1832173499}
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: .0500000007
-  m_GravityScale: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Enabled: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_Offset: {x: 0, y: 1.95000005}
+  serializedVersion: 2
+  m_Size: {x: 1.51999998, y: 4.21000004}
 --- !u!114 &1832173504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -498,6 +479,22 @@ MonoBehaviour:
   movementSpeed: 50
   jumpSpeed: 50
   jumpHeight: 50
+--- !u!50 &1832173506
+Rigidbody2D:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1832173499}
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: .0500000007
+  m_GravityScale: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
 --- !u!1 &2051810914
 GameObject:
   m_ObjectHideFlags: 0

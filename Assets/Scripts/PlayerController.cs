@@ -46,6 +46,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	void Update ()
 	{
 		LimitTopSpeedIfNeeded();
+		
+		if (Time.time - timeAtLastInput > 0.5f) {
+			BecomeIdle();
+		}
 	}
 
 	#endregion Lifecycle Methods
@@ -73,7 +77,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			didReceiveInput = true;
 		}
 		if (!didReceiveInput) {
-			DidReceiveNoInput();
+			BecomeIdle();
 		}
 		// TODO - Handle other inputs
 	}
@@ -87,10 +91,12 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private void DidReceiveJumpCommand()
 	{
-		float jumpHeight = model.jumpHeight;
-		float jumpSpeed = model.jumpSpeed;
-		playerState |= PlayerState.Jumping;
-		Jump(jumpHeight, jumpSpeed);
+		if ((playerState &= PlayerState.Jumping) != PlayerState.Jumping) {
+			float jumpHeight = model.jumpHeight;
+			float jumpSpeed = model.jumpSpeed;
+			playerState |= PlayerState.Jumping;
+			Jump(jumpHeight, jumpSpeed);
+		}
 	}
 
 	private void DidReceiveCrouchCommand()
@@ -98,15 +104,17 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		playerState |= PlayerState.Crouching;
 	}
 
-	private void DidReceiveNoInput()
+	private void BecomeIdle()
 	{
-		// The player didn't do anything this frame. If they were jumping, they are now falling. If they were doing anything else, they are now idle.
-		if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
-			playerState = PlayerState.Falling;
-		}
-		else {
-			Debug.Log("Received no input, changing state to idle");
-			playerState = PlayerState.Idle;
+		if (playerState != PlayerState.Idle) {
+			// The player didn't do anything this frame. If they were jumping, they are now falling. If they were doing anything else, they are now idle.
+			if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
+				playerState = PlayerState.Falling;
+			}
+			else {
+				Debug.Log("Received no input, changing state to idle");
+				playerState = PlayerState.Idle;
+			}
 		}
 	}
 	// DidReceiveAttackCommand(attackType)
@@ -126,9 +134,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	}
 
 	private void Jump(float jumpHeight, float jumpSpeed) {
-			// lerp sprite position at speed
-
-
+		rigidBody.AddForce(Vector2.up * jumpSpeed);
 	}
 	// void Attack(Attack attack) {
 	//		// do attack animation
@@ -159,6 +165,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	void OnTriggerEnter(Collider other)
 	{
+		// TODO - If we collide with the ground, set `isAllowedToJump` to true. And exit the .Falling state.
+
 		// String otherPlayerName = model.otherPlayerName
 		// if (other.tag == otherPlayerName) {
 		//		remove .Attacking state
@@ -186,34 +194,37 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			}
 			if ((value & PlayerState.Moving) == PlayerState.Moving) { // "if state is just Moving, or if it includes Moving state (but maybe other states, too)"
 				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
+				_playerState &= ~PlayerState.Crouching;
 				spriteRenderer.sprite = movingForwardSprite;
-				StartCoroutine(BecomeIdleAfterDelay());
+				timeAtLastInput = Time.time;
 			}
 			if ((value & PlayerState.Jumping) == PlayerState.Jumping) {
 				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
+				_playerState &= ~PlayerState.Falling;
+				_playerState &= ~PlayerState.Crouching;
 				spriteRenderer.sprite = jumpingSprite;
-				StartCoroutine(BecomeIdleAfterDelay());
+				timeAtLastInput = Time.time;
 			}
 			if ((value & PlayerState.Falling) == PlayerState.Falling) {
 				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.
 				_playerState &= ~PlayerState.Jumping;
+				_playerState &= ~PlayerState.Crouching;
 				spriteRenderer.sprite = fallingSprite;
-				StartCoroutine(BecomeIdleAfterDelay());
+				timeAtLastInput = Time.time;
 			}
 			if ((value & PlayerState.Crouching) == PlayerState.Crouching) {
 				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
+				_playerState &= ~PlayerState.Jumping;
+				_playerState &= ~PlayerState.Falling;
+				_playerState &= ~PlayerState.Moving;
 				spriteRenderer.sprite = crouchingSprite;
-				StartCoroutine(BecomeIdleAfterDelay());
+				timeAtLastInput = Time.time;
 			}
 		}
 	}
 
-	IEnumerator BecomeIdleAfterDelay()
-	{
-		yield return new WaitForSeconds(1.0f);
-		Debug.Log("Idle timer delay");
-		playerState = PlayerState.Idle;
-	}
+	private float timeAtLastInput;
+	private bool isAllowedToJump;
 
 	#endregion PlayerState Management
 
@@ -259,3 +270,5 @@ enum PlayerState
 	FacingLeft = 512,
 	FacingRight = 1024
 }
+
+// TODO - Create an invisible centerline object, and do this.transform.lookAt(centerline). If that's negative, we're .FacingLeft. Otherwise we're .FacingRight. Eventually the centerline object will be the other player.
