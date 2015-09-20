@@ -35,7 +35,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		collider = GetComponent<BoxCollider2D>();
 		model = GetComponent<PlayerModel>();
 		rigidBody = GetComponent<Rigidbody2D>();
-		spriteRenderer = GetComponent<SpriteRenderer>();
+		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+		centerline = GameObject.FindGameObjectWithTag("Centerline");
 	}
 
 	// Use this for initialization
@@ -56,6 +57,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		if (!isGrounded && rigidBody.velocity.y < 0) {
 			playerState |= PlayerState.Falling;
 		}
+
+		UpdateFacingDirection();
 	}
 
 	#endregion Lifecycle Methods
@@ -155,6 +158,37 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		}
 	}
 
+	private PlayerFacingDirection _facingDirection = PlayerFacingDirection.FacingRight;
+	private PlayerFacingDirection facingDirection {
+		get {
+			return _facingDirection;
+		}
+		set {
+			_facingDirection = value;
+			if (_facingDirection == PlayerFacingDirection.FacingRight) {
+				spriteRenderer.transform.localScale = new Vector3(1, 1, 1);	// "Flip" the sprite without affecting the orientation of its transform.
+			}
+			else {
+				spriteRenderer.transform.localScale = new Vector3(-1, 1, 1);	// "Flip" the sprite without affecting the orientation of its transform.
+			}
+		}
+	}
+	private void UpdateFacingDirection()
+	{
+		if (centerline.transform.position.x - this.transform.position.x > 0) {
+			// Then centerline is to the right of the fighter.
+			if (facingDirection != PlayerFacingDirection.FacingRight) {
+				facingDirection = PlayerFacingDirection.FacingRight;
+			}
+		}
+		else {
+			// Then centerline is to the left of the fighter.
+			if (facingDirection != PlayerFacingDirection.FacingLeft) {
+				facingDirection = PlayerFacingDirection.FacingLeft;
+			}
+		}
+	}
+
 	#endregion Movement Methods
 
 	#region Collision Methods
@@ -203,7 +237,22 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			}
 			if (StateContainsFlag(value, PlayerState.Moving)) {
 				newState = RemoveIncompatibleFlagsFromState(newState);
-				newSprite = movingForwardSprite;
+				if (facingDirection == PlayerFacingDirection.FacingRight) {
+					if (rigidBody.velocity.x >= 0) {
+						newSprite = movingForwardSprite;
+					}
+					else {
+						newSprite = movingBackwardSprite;
+					}
+				}
+				else { // player FacingLeft
+					if (rigidBody.velocity.x >= 0) {
+						newSprite = movingBackwardSprite;
+					}
+					else {
+						newSprite = movingForwardSprite;
+					}
+				}
 				timeAtLastInput = Time.time;
 			}
 			if (StateContainsFlag(value, PlayerState.Jumping)) {
@@ -294,14 +343,6 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 				finalState = RemoveFlagFromState(finalState, PlayerState.Crouching);
 			}
 
-			// Can't face left and right at the same time.
-			if (StateContainsFlag(finalState, PlayerState.FacingLeft)) {
-				finalState = RemoveFlagFromState(finalState, PlayerState.FacingRight);
-			}
-			if (StateContainsFlag(finalState, PlayerState.FacingRight)) {
-				finalState = RemoveFlagFromState(finalState, PlayerState.FacingLeft);
-			}
-
 			return finalState;
 		}
 		else {
@@ -347,6 +388,7 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	private PlayerModel model;
 	private Rigidbody2D rigidBody;
 	private SpriteRenderer spriteRenderer;
+	private GameObject centerline;
 }
 
 public interface PlayerControllerEventHandler
@@ -367,9 +409,13 @@ enum PlayerState
 	GettingHit = 32,
 	Dying = 64,
 	Falling = 128,
-	Crouching = 256,
-	FacingLeft = 512,
-	FacingRight = 1024
+	Crouching = 256
+}
+
+enum PlayerFacingDirection
+{
+	FacingRight,
+	FacingLeft
 }
 
 // TODO - Create an invisible centerline object, and do this.transform.lookAt(centerline). If that's negative, we're .FacingLeft. Otherwise we're .FacingRight. Eventually the centerline object will be the other player.
