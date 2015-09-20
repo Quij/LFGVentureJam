@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Ground
+  - Centerline
   layers:
   - Default
   - TransparentFX
@@ -43,6 +45,9 @@ TagManager:
     locked: 0
   - name: Background
     uniqueID: 3184452993
+    locked: 0
+  - name: HUD
+    uniqueID: 1893090363
     locked: 0
   - name: Fighters
     uniqueID: 1081714267

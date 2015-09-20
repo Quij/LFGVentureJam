@@ -98,8 +98,6 @@ public class PlayerInputController : MonoBehaviour {
 			if(inputBuffer.Count > bufferLimit) {
 				inputBuffer.RemoveAt(bufferLimit);
 			}
-
-			//Debug.Log(inputBuffer.Count);
 		}
 
 		return;
