@@ -44,6 +44,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 	// Update is called once per frame
 	void Update ()
 	{
+		//
+	}
+
+	void FixedUpdate() {
 		LimitTopSpeedIfNeeded();
 	}
 
@@ -53,6 +57,22 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	public void ReceivedInputCombos(List<InputCombo> inputCombos)
 	{
+		if((inputCombos[0] & InputCombo.Back) == InputCombo.Back) {
+			DidReceiveMovementCommand(Vector2.left);
+		}
+		else if((inputCombos[0] & InputCombo.Forward) == InputCombo.Forward) {
+			DidReceiveMovementCommand(Vector2.right);
+		}
+
+		if((inputCombos[0] & InputCombo.Up) == InputCombo.Up) {
+			DidReceiveMovementCommand(Vector2.up);
+		}
+		else if((inputCombos[0] & InputCombo.Down) == InputCombo.Down) {
+			//crouch
+		}
+
+		/*
+		//move this to a processing function for special moves look-up (but don't process on an individual level)
 		foreach (InputCombo input in inputCombos) {
 			if ((input & InputCombo.Back) == InputCombo.Back) {
 				DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
@@ -71,12 +91,12 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			}
 			// TODO - Handle other inputs
 		}
+		*/
 	}
 
 	private void DidReceiveMovementCommand(Vector2 direction)
 	{
-		float movementSpeed = model.movementSpeed;
-		MoveInDirection(direction, movementSpeed);
+		MoveInDirection(direction, model.movementSpeed);
 		playerState |= PlayerState.Moving;
 	}
 
@@ -143,6 +163,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		else if (rigidBody.velocity.y < -maxSpeed) {
 			rigidBody.velocity = new Vector2(rigidBody.velocity.x, -maxSpeed);
 		}
+
+		return;
 	}
 
 	#endregion Movement Methods

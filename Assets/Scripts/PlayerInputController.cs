@@ -102,7 +102,7 @@ public class PlayerInputController : MonoBehaviour {
 				inputBuffer.RemoveAt(bufferLimit);
 			}
 
-			Debug.Log(inputBuffer.Count);
+			//Debug.Log(inputBuffer.Count);
 			eventHandler.ReceivedInputCombos(inputBuffer);
 		}
 
