@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 {
 	[SerializeField]
 	private float maxSpeed;	// TODO - Move this to the Model
+	[SerializeField]
+	private float jumpDuration = 0.75f;	// TODO - Move this to player model.
 
 	[SerializeField]
 	private Sprite idleSprite;
@@ -50,6 +52,10 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 		if (Time.time - timeAtLastInput > 0.5f) {
 			BecomeIdle();
 		}
+
+		if (!isGrounded && rigidBody.velocity.y < 0) {
+			playerState |= PlayerState.Falling;
+		}
 	}
 
 	#endregion Lifecycle Methods
@@ -58,26 +64,18 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	public void ReceivedInputCombos(List<InputCombo> inputCombos)
 	{
-		bool didReceiveInput = false;
 		InputCombo input = inputCombos[0];
-		if ((input & InputCombo.Back) == InputCombo.Back) {
+		if (StateContainsFlag(input, InputCombo.Back)) {
 			DidReceiveMovementCommand(Vector2.left);	// TODO - Change this to `.right` depending on which way the player is facing.
-			didReceiveInput = true;
 		}
-		if ((input & InputCombo.Forward) == InputCombo.Forward) { 
+		if (StateContainsFlag(input, InputCombo.Forward)) {
 			DidReceiveMovementCommand(Vector2.right);	// TODO - Change this to `.left` depending on which way the player is facing.
-			didReceiveInput = true;
 		}
-		if ((input & InputCombo.Up) == InputCombo.Up) {
+		if (StateContainsFlag(input, InputCombo.Up)) {
 			DidReceiveJumpCommand();
-			didReceiveInput = true;
 		}
-		if ((input & InputCombo.Down) == InputCombo.Down) {
+		if (StateContainsFlag(input, InputCombo.Down)) {
 			DidReceiveCrouchCommand();
-			didReceiveInput = true;
-		}
-		if (!didReceiveInput) {
-			BecomeIdle();
 		}
 		// TODO - Handle other inputs
 	}
@@ -91,28 +89,26 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	private void DidReceiveJumpCommand()
 	{
-		if ((playerState &= PlayerState.Jumping) != PlayerState.Jumping) {
+		if (isAllowedToJump) {
 			float jumpHeight = model.jumpHeight;
 			float jumpSpeed = model.jumpSpeed;
 			playerState |= PlayerState.Jumping;
 			Jump(jumpHeight, jumpSpeed);
+			timeAtLastJump = Time.time;
 		}
 	}
 
 	private void DidReceiveCrouchCommand()
 	{
-		playerState |= PlayerState.Crouching;
+		if (isGrounded) {
+			playerState |= PlayerState.Crouching;
+		}		
 	}
 
 	private void BecomeIdle()
 	{
 		if (playerState != PlayerState.Idle) {
-			// The player didn't do anything this frame. If they were jumping, they are now falling. If they were doing anything else, they are now idle.
-			if ((playerState & PlayerState.Jumping) == PlayerState.Jumping) {
-				playerState = PlayerState.Falling;
-			}
-			else {
-				Debug.Log("Received no input, changing state to idle");
+			if (isGrounded) {
 				playerState = PlayerState.Idle;
 			}
 		}
@@ -163,15 +159,26 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 
 	#region Collision Methods
 
-	void OnTriggerEnter(Collider other)
+	void OnCollisionEnter2D(Collision2D other)
 	{
-		// TODO - If we collide with the ground, set `isAllowedToJump` to true. And exit the .Falling state.
-
+		if (other.gameObject.tag == "Ground") {
+			isGrounded = true;
+			playerState = PlayerState.Idle;
+		}
+		
 		// String otherPlayerName = model.otherPlayerName
 		// if (other.tag == otherPlayerName) {
 		//		remove .Attacking state
 		//		playerState |= .Hitting
 		// }
+	}
+
+	void OnCollisionExit2D(Collision2D other)
+	{
+		if (other.gameObject.tag == "Ground")
+		{
+			isGrounded = false;
+		}
 	}
 
 	private BoxCollider2D collider;
@@ -187,44 +194,138 @@ public class PlayerController : MonoBehaviour, GameStateSubscriber, PlayerInputE
 			return _playerState;
 		}
 		set {
-			_playerState = value;
-			// Reset timer-until-idle. If that timer counts down to 0, then we'll enter the Idle state.
-			if (value == PlayerState.Idle) { // If .Idle is the only flag...
-				spriteRenderer.sprite = idleSprite;
+			PlayerState newState = value;
+			Sprite newSprite = idleSprite;
+
+			if (StateStrictlyContainsFlag(value, PlayerState.Idle)) { // If .Idle is the only flag...
+				newSprite = idleSprite;
+				newState = PlayerState.Idle;
 			}
-			if ((value & PlayerState.Moving) == PlayerState.Moving) { // "if state is just Moving, or if it includes Moving state (but maybe other states, too)"
-				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
-				_playerState &= ~PlayerState.Crouching;
-				spriteRenderer.sprite = movingForwardSprite;
+			if (StateContainsFlag(value, PlayerState.Moving)) {
+				newState = RemoveIncompatibleFlagsFromState(newState);
+				newSprite = movingForwardSprite;
 				timeAtLastInput = Time.time;
 			}
-			if ((value & PlayerState.Jumping) == PlayerState.Jumping) {
-				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
-				_playerState &= ~PlayerState.Falling;
-				_playerState &= ~PlayerState.Crouching;
-				spriteRenderer.sprite = jumpingSprite;
+			if (StateContainsFlag(value, PlayerState.Jumping)) {
+				newState = RemoveIncompatibleFlagsFromState(newState);
+				isGrounded = false;
+				newSprite = jumpingSprite;
 				timeAtLastInput = Time.time;
 			}
-			if ((value & PlayerState.Falling) == PlayerState.Falling) {
-				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.
-				_playerState &= ~PlayerState.Jumping;
-				_playerState &= ~PlayerState.Crouching;
-				spriteRenderer.sprite = fallingSprite;
+			if (StateContainsFlag(value, PlayerState.Falling)) {
+				newState = RemoveIncompatibleFlagsFromState(newState);
+				newSprite = fallingSprite;
 				timeAtLastInput = Time.time;
 			}
-			if ((value & PlayerState.Crouching) == PlayerState.Crouching) {
-				_playerState &= ~PlayerState.Idle;	// Remove the .Idle flag. TODO - Replace these manual removals with a `transitionFromOldValue:ToNewValue:` function.	
-				_playerState &= ~PlayerState.Jumping;
-				_playerState &= ~PlayerState.Falling;
-				_playerState &= ~PlayerState.Moving;
-				spriteRenderer.sprite = crouchingSprite;
+			if (StateContainsFlag(value, PlayerState.Crouching)) {
+				newState = RemoveIncompatibleFlagsFromState(newState);
+				newSprite = crouchingSprite;
 				timeAtLastInput = Time.time;
 			}
+
+			_playerState = newState;
+			spriteRenderer.sprite = newSprite;
 		}
 	}
 
+	private bool StateContainsFlag(PlayerState state, PlayerState flag)
+	{
+		if ((state &= flag) == flag) {
+			return true;
+		}
+		return false;
+	}
+
+	private bool StateContainsFlag(InputCombo state, InputCombo flag)
+	{
+		if ((state &= flag) == flag) {
+			return true;
+		}
+		return false;
+	}
+
+	private PlayerState RemoveFlagFromState(PlayerState state, PlayerState flagToRemove)
+	{
+		return state &= ~flagToRemove;
+	}
+
+	// If we can remove the given flag and we're left with "None", then that flag was the only one present in `state`.
+	private bool StateStrictlyContainsFlag(PlayerState state, PlayerState flag)
+	{
+		if (RemoveFlagFromState(state, flag) == PlayerState.None) {
+			return true;
+		}
+		return false;
+	}
+
+	// All states are incompatible with Idle.
+	// Moving is incompatible with Crouching.
+	// Crouching is incompatible with Moving, Jumping, and Falling.
+	// Jumping is incompatible with Falling and Crouching.
+	// Falling is incompatible with Jumping and Crouching.
+	// FacingLeft is incompatible with FacingRight (and vice versa).
+	private PlayerState RemoveIncompatibleFlagsFromState(PlayerState state)
+	{
+		if (!StateStrictlyContainsFlag(state, PlayerState.Idle)) {
+			PlayerState finalState = state;
+			finalState = RemoveFlagFromState(finalState, PlayerState.Idle);	
+
+			// Can't move and crouch at the same time.
+			if (StateContainsFlag(finalState, PlayerState.Moving)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.Crouching);
+			}
+
+			// Can't crouch and move, jump, or fall at the same time.
+			if (StateContainsFlag(finalState, PlayerState.Crouching)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.Moving);
+				finalState = RemoveFlagFromState(finalState, PlayerState.Jumping);
+				finalState = RemoveFlagFromState(finalState, PlayerState.Falling);
+			}
+
+			// Can't fall and jump or crouch at the same time.
+			if (StateContainsFlag(finalState, PlayerState.Falling)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.Jumping);
+				finalState = RemoveFlagFromState(finalState, PlayerState.Crouching);
+			}
+
+			// Can't jump and fall or crouch at the same time.
+			if (StateContainsFlag(finalState, PlayerState.Jumping)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.Falling);
+				finalState = RemoveFlagFromState(finalState, PlayerState.Crouching);
+			}
+
+			// Can't face left and right at the same time.
+			if (StateContainsFlag(finalState, PlayerState.FacingLeft)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.FacingRight);
+			}
+			if (StateContainsFlag(finalState, PlayerState.FacingRight)) {
+				finalState = RemoveFlagFromState(finalState, PlayerState.FacingLeft);
+			}
+
+			return finalState;
+		}
+		else {
+			// The state is just .Idle, so leave it at that.
+			return state;
+		}
+	}
+
+	private bool _isGrounded = true;
+	private bool isGrounded {
+		get {
+			return _isGrounded;
+		}
+		set {
+			_isGrounded = value;
+		}
+	}
 	private float timeAtLastInput;
-	private bool isAllowedToJump;
+	private float timeAtLastJump;
+	private bool isAllowedToJump {
+		get {
+			return isGrounded;
+		}
+	}
 
 	#endregion PlayerState Management
 

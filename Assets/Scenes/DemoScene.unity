@@ -95,13 +95,30 @@ GameObject:
   - 4: {fileID: 375166467}
   - 212: {fileID: 375166466}
   - 61: {fileID: 375166465}
+  - 50: {fileID: 375166464}
   m_Layer: 0
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!50 &375166464
+Rigidbody2D:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 375166463}
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: .0500000007
+  m_GravityScale: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 7
 --- !u!61 &375166465
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -394,7 +411,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad59f03215bfe4842aa4f6df45210ae7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 0
+  maxSpeed: 50
+  jumpDuration: .75
   idleSprite: {fileID: 21300000, guid: 01f5dd6a9045bc448b4ae223488f1c9e, type: 3}
   movingForwardSprite: {fileID: 21300002, guid: 01f5dd6a9045bc448b4ae223488f1c9e,
     type: 3}
@@ -436,7 +454,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1832173499}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.48999977, y: -4.30000019, z: 0}
+  m_LocalPosition: {x: -8.48999977, y: -3.52999997, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -477,7 +495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 50
-  jumpSpeed: 50
+  jumpSpeed: 300
   jumpHeight: 50
 --- !u!50 &1832173506
 Rigidbody2D:
